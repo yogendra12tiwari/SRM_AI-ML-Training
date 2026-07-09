@@ -46,6 +46,8 @@ st.markdown("""
 
 </style>
 """, unsafe_allow_html=True)
+
+
 # ============================================
 # Load Models
 # ============================================
@@ -71,6 +73,8 @@ def load_models():
 
     return rf_model, nn_model, encoders, scaler
 
+rf_model, nn_model, encoders, scaler = load_models()
+
 
 # ============================================
 # Load Dataset
@@ -79,12 +83,11 @@ def load_models():
 @st.cache_data
 def load_data():
 
-    return pd.read_csv(
-        "dataset/House_rent_Dataset.csv"
-    )
+    csv_path = DATASET_DIR / "House_rent_Dataset.csv"
+
+    return pd.read_csv(csv_path)
 
 df = load_data()
-
 # ============================================
 # Sidebar
 # ============================================

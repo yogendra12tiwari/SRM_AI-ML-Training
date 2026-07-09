@@ -10,7 +10,7 @@ import tensorflow as tf
 
 import matplotlib.pyplot as plt
 import plotly.express as px
-
+from pathlib import Path
 # ============================================
 # Page Configuration
 # ============================================
@@ -20,6 +20,11 @@ st.set_page_config(
     page_icon="🏠",
     layout="wide"
 )
+BASE_DIR = Path(__file__).resolve().parent
+
+MODELS_DIR = BASE_DIR / "models"
+
+DATASET_DIR = BASE_DIR / "dataset"
 st.markdown("""
 <style>
 
@@ -48,24 +53,23 @@ st.markdown("""
 @st.cache_resource
 def load_models():
 
-    rf_model = joblib.load("models/house_rent_model.pkl")
+    rf_model = joblib.load(
+        MODELS_DIR / "house_rent_model.pkl"
+    )
 
     nn_model = tf.keras.models.load_model(
-        "models/house_rent_nn.keras"
+        MODELS_DIR / "house_rent_nn.keras"
     )
 
     encoders = joblib.load(
-        "models/encoders.pkl"
+        MODELS_DIR / "encoders.pkl"
     )
 
     scaler = joblib.load(
-        "models/scaler.pkl"
+        MODELS_DIR / "scaler.pkl"
     )
 
     return rf_model, nn_model, encoders, scaler
-
-
-rf_model, nn_model, encoders, scaler = load_models()
 
 
 # ============================================

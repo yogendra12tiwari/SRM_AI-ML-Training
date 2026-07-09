@@ -32,9 +32,9 @@ from tensorflow.keras.callbacks import EarlyStopping
 # Load Dataset
 # ===========================================
 
-DATA_PATH = "dataset/House_rent_Dataset.csv"
-
-df = pd.read_csv(DATA_PATH)
+df = pd.read_csv(
+    DATASET_DIR / "House_rent_Dataset.csv"
+    )
 
 print("=" * 50)
 print("Dataset Loaded Successfully")

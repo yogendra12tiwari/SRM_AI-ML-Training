@@ -11,13 +11,9 @@ from config.settings import (
 class LLM:
 
     def __init__(self):
-
-        if not GROQ_API_KEY:
-            raise ValueError(
-                "GROQ_API_KEY not found. Check your .env file."
-            )
-
-        self.client = Groq(api_key=GROQ_API_KEY)
+        self.client = Groq(
+            api_key=GROQ_API_KEY
+        )
 
     def chat(self, messages):
 
@@ -32,4 +28,4 @@ class LLM:
             max_tokens=MAX_TOKENS,
         )
 
-        return completion.choices[0].message.content
+        return completion.choices[0].message.content.strip()

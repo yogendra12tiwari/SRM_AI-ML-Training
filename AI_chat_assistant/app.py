@@ -5,9 +5,9 @@ from chatbot.engine import ChatEngine
 from chatbot.stream import stream_text
 
 
-# ----------------------------
+# -----------------------------
 # Page Config
-# ----------------------------
+# -----------------------------
 
 st.set_page_config(
     page_title="AI Chat Assistant",
@@ -17,9 +17,9 @@ st.set_page_config(
 )
 
 
-# ----------------------------
-# CSS
-# ----------------------------
+# -----------------------------
+# Load CSS
+# -----------------------------
 
 def load_css():
 
@@ -33,38 +33,69 @@ def load_css():
             )
 
     except FileNotFoundError:
+
         pass
 
 
 load_css()
 
 
-# ----------------------------
+# -----------------------------
 # Session State
-# ----------------------------
+# -----------------------------
 
 if "engine" not in st.session_state:
-
     st.session_state.engine = ChatEngine()
 
 if "messages" not in st.session_state:
-
     st.session_state.messages = []
 
 
-# ----------------------------
+# -----------------------------
 # Sidebar
-# ----------------------------
+# -----------------------------
 
 with st.sidebar:
 
-    st.title("🤖 AI Assistant")
+    st.title("🤖 AI Chat Assistant")
 
     st.success("🟢 Connected")
+    st.divider()
+
+chat_mode = st.radio(
+    "Select Chat Mode",
+    [
+        "🌐 AI Chat",
+        "📄 PDF Chat"
+    ],
+    index=0
+)
+
+st.divider()
+    
+
+uploaded_pdf = st.file_uploader(
+    "Upload PDF",
+    type=["pdf"]
+)
+
+if uploaded_pdf:
+
+    pdf_path = f"uploads/{uploaded_pdf.name}"
+
+    with open(pdf_path, "wb") as f:
+
+        f.write(uploaded_pdf.getbuffer())
+
+    with st.spinner("Reading PDF..."):
+
+        st.session_state.engine.load_pdf(pdf_path)
+
+    st.success("PDF Loaded Successfully!")
 
     st.divider()
 
-    if st.button("🆕 New Chat"):
+    if st.button("🆕 New Chat", use_container_width=True):
 
         st.session_state.engine.reset()
 
@@ -75,75 +106,73 @@ with st.sidebar:
     st.divider()
 
     user_count = sum(
-        1
-        for m in st.session_state.messages
-        if m["role"] == "user"
+        1 for msg in st.session_state.messages
+        if msg["role"] == "user"
     )
 
     ai_count = sum(
-        1
-        for m in st.session_state.messages
-        if m["role"] == "assistant"
+        1 for msg in st.session_state.messages
+        if msg["role"] == "assistant"
     )
 
-    st.metric("User Messages", user_count)
-
-    st.metric("AI Messages", ai_count)
+    st.metric("User", user_count)
+    st.metric("Assistant", ai_count)
 
     st.divider()
 
-    st.caption("Powered by Groq + Llama")
+    st.caption("Powered by Groq")
 
 
-# ----------------------------
+# -----------------------------
 # Header
-# ----------------------------
+# -----------------------------
 
 st.title("🤖 AI Chat Assistant")
 
-st.caption("Your Personal AI Assistant")
+st.caption("Built with Streamlit + Groq")
 
 
-# ----------------------------
+# -----------------------------
 # Welcome
-# ----------------------------
+# -----------------------------
 
 if len(st.session_state.messages) == 0:
 
-    st.markdown("""
-## 👋 Welcome!
+    st.info(
+        """
+👋 Welcome!
 
-I'm your AI assistant.
-                
-    How can I  help you
+Try asking:
+
+How can I help You 
+
+"""
+    )
 
 
-""")
-
-
-# ----------------------------
+# -----------------------------
 # Chat History
-# ----------------------------
+# -----------------------------
 
-for message in st.session_state.messages:
+for msg in st.session_state.messages:
 
-    with st.chat_message(message["role"]):
+    with st.chat_message(msg["role"]):
 
-        st.markdown(message["content"])
+        st.markdown(msg["content"])
 
-        st.caption(message["time"])
+        st.caption(msg["time"])
 
 
-# ----------------------------
-# User Input
-# ----------------------------
+# -----------------------------
+# Chat Input
+# -----------------------------
 
 prompt = st.chat_input("Message AI Assistant...")
 
 
-# ----------------------------
+# -----------------------------
 # Chat Logic
-# ----------------------------
+# -----------------------------
 
 if prompt:
 
@@ -165,7 +194,25 @@ if prompt:
 
     with st.spinner("🤖 Thinking..."):
 
-        response = st.session_state.engine.chat(prompt)
+        if chat_mode == "📄 PDF Chat":
+
+            if st.session_state.engine.pdf_loaded:
+
+                response = st.session_state.engine.chat(prompt)
+
+            else:
+
+                response = "⚠ Please upload a PDF first."
+
+        else:
+
+            pdf_state = st.session_state.engine.pdf_loaded
+
+            st.session_state.engine.pdf_loaded = False
+
+            response = st.session_state.engine.chat(prompt)
+
+            st.session_state.engine.pdf_loaded = pdf_state
 
     response_time = datetime.now().strftime("%H:%M")
 

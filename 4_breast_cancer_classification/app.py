@@ -12,7 +12,6 @@ Run locally:
 import numpy as np
 import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
 
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
@@ -161,17 +160,25 @@ with col1:
 
 with col2:
     st.write("**Where this patient falls vs. the dataset** (mean radius vs. mean texture)")
-    fig, ax = plt.subplots(figsize=(6, 4))
-    colors = df_full["target"].map({0: "#c53030", 1: "#2b6cb0"})
-    ax.scatter(df_full["mean radius"], df_full["mean texture"], c=colors, alpha=0.4, s=20)
-    ax.scatter(
-        user_input["mean radius"], user_input["mean texture"],
-        c="black", s=150, marker="*", label="Your input", edgecolors="white"
+    plot_df = df_full[["mean radius", "mean texture", "target"]].copy()
+    plot_df["group"] = plot_df["target"].map({0: "malignant", 1: "benign"})
+    plot_df = plot_df.drop(columns="target")
+
+    # Add the user's input point as its own category so it stands out
+    user_point = pd.DataFrame({
+        "mean radius": [user_input["mean radius"]],
+        "mean texture": [user_input["mean texture"]],
+        "group": ["your input"],
+    })
+    combined = pd.concat([plot_df, user_point], ignore_index=True)
+
+    st.scatter_chart(
+        combined,
+        x="mean radius",
+        y="mean texture",
+        color="group",
+        size=40,
     )
-    ax.set_xlabel("Mean radius")
-    ax.set_ylabel("Mean texture")
-    ax.legend(loc="upper right")
-    st.pyplot(fig)
 
 st.divider()
 st.caption(

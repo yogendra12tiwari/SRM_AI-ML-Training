@@ -1,16 +1,39 @@
-#MainMenu{
-visibility:hidden;
+/* Hide Streamlit Branding */
+
+#MainMenu {
+    visibility: hidden;
 }
 
-footer{
-visibility:hidden;
+footer {
+    visibility: hidden;
 }
 
-header{
-visibility:hidden;
+header {
+    visibility: hidden;
 }
 
-.block-container{
-padding-top:2rem;
-padding-bottom:2rem;
+/* Main Layout */
+
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Sidebar */
+
+section[data-testid="stSidebar"] {
+    border-right: 1px solid #333;
+}
+
+/* Chat */
+
+.stChatMessage {
+    border-radius: 12px;
+}
+
+/* Buttons */
+
+.stButton>button {
+    width: 100%;
+    border-radius: 10px;
 }

@@ -2,6 +2,9 @@ import time
 
 
 def stream_text(text):
+    """
+    Simulate streaming response.
+    """
 
     words = text.split()
 

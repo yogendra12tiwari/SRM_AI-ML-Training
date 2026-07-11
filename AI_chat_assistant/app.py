@@ -1,3 +1,4 @@
+
 import streamlit as st
 from datetime import datetime
 
@@ -6,11 +7,10 @@ from chatbot.stream import stream_text
 
 
 # -----------------------------
-# Page Config
+# Page Configuration
 # -----------------------------
-
 st.set_page_config(
-    page_title="AI Chat Assistant",
+    page_title="AI Knowledge Assistant",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -20,20 +20,14 @@ st.set_page_config(
 # -----------------------------
 # Load CSS
 # -----------------------------
-
 def load_css():
-
     try:
-
         with open("assets/styles.css") as f:
-
             st.markdown(
                 f"<style>{f.read()}</style>",
-                unsafe_allow_html=True
+                unsafe_allow_html=True,
             )
-
     except FileNotFoundError:
-
         pass
 
 
@@ -43,7 +37,6 @@ load_css()
 # -----------------------------
 # Session State
 # -----------------------------
-
 if "engine" not in st.session_state:
     st.session_state.engine = ChatEngine()
 
@@ -54,106 +47,74 @@ if "messages" not in st.session_state:
 # -----------------------------
 # Sidebar
 # -----------------------------
-
 with st.sidebar:
 
-    st.title("🤖 AI Chat Assistant")
+    st.title("🤖 AI Knowledge Assistant")
 
     st.success("🟢 Connected")
-    st.divider()
-
-chat_mode = st.radio(
-    "Select Chat Mode",
-    [
-        "🌐 AI Chat",
-        "📄 PDF Chat"
-    ],
-    index=0
-)
-
-st.divider()
-    
-
-uploaded_pdf = st.file_uploader(
-    "Upload PDF",
-    type=["pdf"]
-)
-
-if uploaded_pdf:
-
-    pdf_path = f"uploads/{uploaded_pdf.name}"
-
-    with open(pdf_path, "wb") as f:
-
-        f.write(uploaded_pdf.getbuffer())
-
-    with st.spinner("Reading PDF..."):
-
-        st.session_state.engine.load_pdf(pdf_path)
-
-    st.success("PDF Loaded Successfully!")
 
     st.divider()
 
     if st.button("🆕 New Chat", use_container_width=True):
-
         st.session_state.engine.reset()
-
         st.session_state.messages = []
-
         st.rerun()
 
     st.divider()
 
-    user_count = sum(
+    user_messages = sum(
         1 for msg in st.session_state.messages
         if msg["role"] == "user"
     )
 
-    ai_count = sum(
+    ai_messages = sum(
         1 for msg in st.session_state.messages
         if msg["role"] == "assistant"
     )
 
-    st.metric("User", user_count)
-    st.metric("Assistant", ai_count)
+    st.metric("User Messages", user_messages)
+    st.metric("AI Messages", ai_messages)
 
     st.divider()
 
-    st.caption("Powered by Groq")
-
-
-# -----------------------------
-# Header
-# -----------------------------
-
-st.title("🤖 AI Chat Assistant")
-
-st.caption("Built with Streamlit + Groq")
-
-
-# -----------------------------
-# Welcome
-# -----------------------------
-
-if len(st.session_state.messages) == 0:
-
     st.info(
         """
-👋 Welcome!
+Model
 
-Try asking:
+Llama 3.3
 
-How can I help You 
+Provider
 
+Groq
 """
     )
 
 
 # -----------------------------
-# Chat History
+# Header
 # -----------------------------
+st.title("🤖 AI Knowledge Assistant")
 
+st.caption("Powered by Groq + Llama 3")
+
+
+# -----------------------------
+# Welcome
+# -----------------------------
+if len(st.session_state.messages) == 0:
+
+    st.markdown("""
+# 👋 Welcome
+
+You can ask me anything.
+
+
+""")
+
+
+# -----------------------------
+# Display Chat History
+# -----------------------------
 for msg in st.session_state.messages:
 
     with st.chat_message(msg["role"]):
@@ -166,14 +127,12 @@ for msg in st.session_state.messages:
 # -----------------------------
 # Chat Input
 # -----------------------------
-
-prompt = st.chat_input("Message AI Assistant...")
+prompt = st.chat_input("Ask anything...")
 
 
 # -----------------------------
 # Chat Logic
 # -----------------------------
-
 if prompt:
 
     current_time = datetime.now().strftime("%H:%M")
@@ -182,37 +141,16 @@ if prompt:
         {
             "role": "user",
             "content": prompt,
-            "time": current_time
+            "time": current_time,
         }
     )
 
     with st.chat_message("user"):
-
         st.markdown(prompt)
-
         st.caption(current_time)
 
-    with st.spinner("🤖 Thinking..."):
-
-        if chat_mode == "📄 PDF Chat":
-
-            if st.session_state.engine.pdf_loaded:
-
-                response = st.session_state.engine.chat(prompt)
-
-            else:
-
-                response = "⚠ Please upload a PDF first."
-
-        else:
-
-            pdf_state = st.session_state.engine.pdf_loaded
-
-            st.session_state.engine.pdf_loaded = False
-
-            response = st.session_state.engine.chat(prompt)
-
-            st.session_state.engine.pdf_loaded = pdf_state
+    with st.spinner("Generating response..."):
+        response = st.session_state.engine.chat(prompt)
 
     response_time = datetime.now().strftime("%H:%M")
 
@@ -220,12 +158,11 @@ if prompt:
         {
             "role": "assistant",
             "content": response,
-            "time": response_time
+            "time": response_time,
         }
     )
 
     with st.chat_message("assistant"):
-
         st.write_stream(stream_text(response))
-
         st.caption(response_time)
+

@@ -11,7 +11,7 @@ Expected files in the same folder as this script:
     - history.pkl   (optional, used for the "Training History" tab)
 """
 
-import pickle
+import joblib
 from pathlib import Path
 
 import numpy as np
@@ -49,8 +49,7 @@ def load_model(model_path: str):
 
 @st.cache_resource(show_spinner=False)
 def load_class_names(path: str):
-    with open(path, "rb") as f:
-        return pickle.load(f)
+    return joblib.load(path)
 
 
 @st.cache_resource(show_spinner=False)
@@ -127,10 +126,18 @@ with tab_predict:
             st.error("class_names.pkl not found.")
         else:
             with st.spinner(f"Loading {model_choice} and running prediction..."):
+                
                 model = load_model(str(model_path))
                 class_names = load_class_names(str(CLASS_NAMES_PATH))
                 input_arr = preprocess_image(image)
+            
                 preds = model.predict(input_arr, verbose=0)[0]
+            
+                predicted_index = np.argmax(preds)
+            
+                st.write("Predicted Index:", predicted_index)
+                st.write("Raw Class:", class_names[predicted_index])
+                st.write("Confidence:", float(preds[predicted_index]))
 
             top_indices = preds.argsort()[::-1][:top_k]
             top_labels = [prettify_label(class_names[i]) for i in top_indices]

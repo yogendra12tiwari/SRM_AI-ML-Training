@@ -56,8 +56,7 @@ def load_class_names(path: str):
 def load_history(path: str):
     if not Path(path).exists():
         return None
-    with open(path, "rb") as f:
-        return pickle.load(f)
+    return joblib.load(path)
 
 
 def prettify_label(raw_label: str) -> str:
